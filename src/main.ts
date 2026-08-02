@@ -76,7 +76,10 @@ larekApi
 		});
 
 		console.log('Данные заказа:', orderModel.getOrder());
-
+        console.log(
+            'Заказ заполнен корректно:',
+            orderModel.validate()
+        );
 		basketModel.clear();
 
 		console.log(
