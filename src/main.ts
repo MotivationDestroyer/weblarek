@@ -9,7 +9,6 @@ import { API_URL } from './utils/constants';
 
 
 const api = new Api(API_URL);
-
 const larekApi = new LarekApi(api);
 
 const productsModel = new Products();
@@ -17,27 +16,74 @@ const basketModel = new Basket();
 const orderModel = new Order();
 
 larekApi
-    .getProducts()
-    .then((data) => {
-        productsModel.setItems(data.items);
+	.getProducts()
+	.then((data) => {
+		productsModel.setItems(data.items);
 
-        console.log('Каталог товаров:', productsModel.getItems());
+		console.log('Каталог товаров:', productsModel.getItems());
 
-        basketModel.addItem(data.items[0]);
-        basketModel.addItem(data.items[1]);
+		console.log(
+			'Товар по id:',
+			productsModel.getItem(data.items[0].id)
+		);
 
-        console.log('Корзина:', basketModel.getItems());
-        console.log('Общая стоимость:', basketModel.getTotal());
+		productsModel.setPreview(data.items[0].id);
 
-        orderModel.setOrder({
-            payment: 'тестовая оплата',
-            address: 'Муром',
-            email: 'test@test.ru',
-            phone: '+79999999999',
-            items: basketModel.getItems().map(item => item.id),
-            total: basketModel.getTotal(),
-        });
+		console.log(
+			'Товар для подробного просмотра:',
+			productsModel.getPreview()
+		);
 
-        console.log('Заказ:', orderModel.getOrder());
-    })
-    .catch(console.error);
+		basketModel.addItem(data.items[0]);
+		basketModel.addItem(data.items[1]);
+
+		console.log('Товары в корзине:', basketModel.getItems());
+
+		console.log(
+			'Общая стоимость товаров:',
+			basketModel.getTotal()
+		);
+
+		console.log(
+			'Количество товаров:',
+			basketModel.getCount()
+		);
+
+		console.log(
+			'Первый товар находится в корзине:',
+			basketModel.hasItem(data.items[0].id)
+		);
+
+		basketModel.removeItem(data.items[0].id);
+
+		console.log(
+			'Корзина после удаления товара:',
+			basketModel.getItems()
+		);
+
+		console.log(
+			'Количество товаров после удаления:',
+			basketModel.getCount()
+		);
+
+		orderModel.setOrder({
+			payment: 'card',
+			address: 'Муром',
+			email: 'test@test.ru',
+			phone: '+79999999999',
+			items: basketModel.getItems().map((item) => item.id),
+			total: basketModel.getTotal(),
+		});
+
+		console.log('Данные заказа:', orderModel.getOrder());
+
+		basketModel.clear();
+
+		console.log(
+			'Корзина после очистки:',
+			basketModel.getItems()
+		);
+	})
+	.catch((error) => {
+		console.error('Ошибка при получении каталога:', error);
+	});

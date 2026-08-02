@@ -22,4 +22,12 @@ export class Basket {
     getTotal(): number {
         return this.items.reduce((sum, item) => sum + (item.price ?? 0), 0);
     }
+
+    getCount(): number {
+        return this.items.length;
+    }
+
+    hasItem(id: string): boolean {
+        return this.items.some(item => item.id === id);
+    }
 }

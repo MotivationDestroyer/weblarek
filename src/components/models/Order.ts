@@ -31,4 +31,13 @@ export class Order {
             total: 0,
         };
     }
+
+    validate(): boolean {
+        return (
+            this.order.payment.trim() !== '' &&
+            this.order.address.trim() !== '' &&
+            this.order.email.trim() !== '' &&
+            this.order.phone.trim() !== ''
+        );
+    }
 }
