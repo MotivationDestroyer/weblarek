@@ -4,7 +4,7 @@ import { Api } from './components/base/Api';
 import { LarekApi } from './components/Api/LarekApi';
 import { Products } from './components/models/Products';
 import { Basket } from './components/models/Basket';
-import { Order } from './components/models/Order';
+import { Buyer } from './components/models/Buyer';
 import { API_URL } from './utils/constants';
 
 
@@ -13,7 +13,7 @@ const larekApi = new LarekApi(api);
 
 const productsModel = new Products();
 const basketModel = new Basket();
-const orderModel = new Order();
+const buyerModel = new Buyer();
 
 larekApi
 	.getProducts()
@@ -66,20 +66,15 @@ larekApi
 			basketModel.getCount()
 		);
 
-		orderModel.setOrder({
-			payment: 'card',
+		buyerModel.setBuyer({
+			payment: 'online',
 			address: 'Муром',
 			email: 'test@test.ru',
 			phone: '+79999999999',
-			items: basketModel.getItems().map((item) => item.id),
-			total: basketModel.getTotal(),
 		});
 
-		console.log('Данные заказа:', orderModel.getOrder());
-        console.log(
-            'Заказ заполнен корректно:',
-            orderModel.validate()
-        );
+		console.log('Данные покупателя:', buyerModel.getBuyer());
+		console.log('Ошибки валидации:', buyerModel.validate());
 		basketModel.clear();
 
 		console.log(

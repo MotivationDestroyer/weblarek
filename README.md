@@ -99,3 +99,174 @@ Presenter - презентер содержит основную логику п
 `emit<T extends object>(event: string, data?: T): void` - инициализация события. При вызове события в метод передается название события и объект с данными, который будет использован как аргумент для вызова обработчика.  
 `trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void` - возвращает функцию, при вызове которой инициализируется требуемое в параметрах событие с передачей в него данных из второго параметра.
 
+Типы данных
+Тип IProduct
+
+Описывает товар каталога.
+
+Поля:
+
+id: string — идентификатор товара.
+description: string — описание.
+image: string — путь к изображению.
+title: string — название.
+category: string — категория.
+price: number | null — стоимость товара.
+
+Тип IBuyer
+
+Описывает данные покупателя.
+
+Поля:
+
+payment: TPayment — способ оплаты.
+email: string — электронная почта.
+phone: string — телефон.
+address: string — адрес доставки.
+
+Тип TPayment
+
+Допустимые способы оплаты.
+
+type TPayment = 'online' | 'offline'
+
+Тип IOrder
+
+Описывает тело запроса отправки заказа.
+
+Наследуется от IBuyer.
+
+Дополнительные поля:
+
+items: string[] — идентификаторы товаров.
+total: number — общая стоимость.
+Тип IOrderResult
+
+Ответ сервера после оформления заказа.
+
+Поля:
+
+id: string
+total: number
+
+Слой данных
+Класс Products
+
+Хранит каталог товаров и выбранный для просмотра товар.
+
+Поля
+
+items: IProduct[] — каталог товаров.
+
+preview: IProduct | null — выбранный товар.
+
+Методы
+
+setItems(items: IProduct[]): void
+
+Сохраняет каталог товаров.
+
+getItems(): IProduct[]
+
+Возвращает каталог товаров.
+
+getItem(id: string): IProduct | undefined
+
+Возвращает товар по идентификатору.
+
+setPreview(id: string): void
+
+Устанавливает выбранный товар.
+
+getPreview(): IProduct | null
+
+Возвращает выбранный товар.
+
+Класс Basket
+
+Хранит товары, добавленные пользователем в корзину.
+
+Поля
+
+items: IProduct[]
+
+Методы
+
+addItem(item: IProduct): void
+
+Добавляет товар.
+
+removeItem(id: string): void
+
+Удаляет товар.
+
+getItems(): IProduct[]
+
+Возвращает товары.
+
+getCount(): number
+
+Возвращает количество товаров.
+
+getTotal(): number
+
+Возвращает общую стоимость.
+
+hasItem(id: string): boolean
+
+Проверяет наличие товара.
+
+clear(): void
+
+Очищает корзину.
+
+Класс Buyer
+
+Хранит данные покупателя.
+
+Поля
+
+buyer: IBuyer
+
+Методы
+
+setBuyer(data: Partial<IBuyer>): void
+
+Сохраняет данные покупателя.
+
+getBuyer(): IBuyer
+
+Возвращает данные покупателя.
+
+validate(): TBuyerErrors
+
+Проверяет корректность заполнения данных.
+
+Возвращает объект ошибок. Если ошибок нет — возвращается пустой объект.
+
+clear(): void
+
+Очищает данные покупателя.
+
+Слой коммуникации
+Класс LarekApi
+
+Отвечает за взаимодействие с сервером. Использует композицию с классом Api.
+
+Конструктор
+constructor(api: IApi)
+Поля
+
+api: IApi
+
+Экземпляр класса Api.
+
+Методы
+
+getProducts(): Promise<IProductsData>
+
+Получает каталог товаров.
+
+orderProducts(order: IOrder): Promise<IOrderResult>
+
+Отправляет заказ на сервер и получает подтверждение оформления.
