@@ -1,33 +1,61 @@
 import { IProduct } from "../../types";
+import { EventEmitter } from "../base/EventEmitter";
 
 export class Basket {
-    private items: IProduct[] = [];
+	private items: IProduct[] = [];
 
-    addItem(item: IProduct): void {
-        this.items.push(item);
-    }
+	constructor(private events: EventEmitter) {}
 
-    removeItem(id: string): void {
-        this.items = this.items.filter(item => item.id !== id);
-    }
+	addItem(item: IProduct): void {
+		if (!this.hasItem(item.id)) {
+			this.items.push(item);
 
-    getItems(): IProduct[] {
-        return this.items;
-    }
+			this.events.emit(
+				'basket:changed',
+				this.items
+			);
+		}
+	}
 
-    clear(): void {
-        this.items = [];
-    }
+	removeItem(id: string): void {
+		this.items = this.items.filter(
+			(item) => item.id !== id
+		);
 
-    getTotal(): number {
-        return this.items.reduce((sum, item) => sum + (item.price ?? 0), 0);
-    }
+		this.events.emit(
+			'basket:changed',
+			this.items
+		);
+	}
 
-    getCount(): number {
-        return this.items.length;
-    }
+	getItems(): IProduct[] {
+		return this.items;
+	}
 
-    hasItem(id: string): boolean {
-        return this.items.some(item => item.id === id);
-    }
+	clear(): void {
+		this.items = [];
+
+		this.events.emit(
+			'basket:changed',
+			this.items
+		);
+	}
+
+	getTotal(): number {
+		return this.items.reduce(
+			(sum, item) =>
+				sum + (item.price ?? 0),
+			0
+		);
+	}
+
+	getCount(): number {
+		return this.items.length;
+	}
+
+	hasItem(id: string): boolean {
+		return this.items.some(
+			(item) => item.id === id
+		);
+	}
 }

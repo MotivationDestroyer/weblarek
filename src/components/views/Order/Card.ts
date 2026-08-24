@@ -1,6 +1,6 @@
-import { IProduct } from '../../types';
-import { Component } from '../base/Component';
-import { EventEmitter } from '../base/EventEmitter';
+import { IProduct } from '../../../types';
+import { Component } from '../../base/Component';
+import { EventEmitter } from '../../base/EventEmitter';
 
 export abstract class Card extends Component<IProduct> {
 	protected title: HTMLElement;
