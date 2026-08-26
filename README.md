@@ -270,3 +270,154 @@ getProducts(): Promise<IProductsData>
 orderProducts(order: IOrder): Promise<IOrderResult>
 
 Отправляет заказ на сервер и получает подтверждение оформления.
+
+# Слой представления
+
+## Класс Card
+
+Абстрактный базовый класс для карточек товаров. Наследуется от `Component<IProduct>`.
+
+### Конструктор
+
+`constructor(container: HTMLElement, events: EventEmitter)` — принимает DOM-элемент карточки и брокер событий.
+
+### Поля
+
+- `category: HTMLElement` — элемент категории товара.
+- `title: HTMLElement` — элемент названия товара.
+- `price: HTMLElement` — элемент стоимости товара.
+- `image: HTMLImageElement` — изображение товара.
+
+## Класс CardCatalog
+
+Отвечает за отображение товара в каталоге.
+
+### Конструктор
+
+`constructor(container: HTMLElement, events: EventEmitter)` — принимает DOM-элемент карточки и брокер событий.
+
+### Методы
+
+`render(data: IProduct): HTMLElement` — заполняет карточку данными товара и возвращает её DOM-элемент.
+
+## Класс CardPreview
+
+Отображает подробную информацию о выбранном товаре.
+
+### Конструктор
+
+`constructor(container: HTMLElement, events: EventEmitter)` — принимает DOM-элемент карточки и брокер событий.
+
+### Поля
+
+- `cardText: HTMLElement` — элемент описания товара.
+- `cardButton: HTMLButtonElement` — кнопка добавления товара в корзину.
+
+### Методы
+
+`render(data: IProduct): HTMLElement` — отображает категорию, название, стоимость, описание и изображение товара.
+
+## Класс CardBasket
+
+Отображает товар внутри корзины.
+
+### Конструктор
+
+`constructor(container: HTMLElement, events: EventEmitter)` — принимает DOM-элемент карточки и брокер событий.
+
+### Поля
+
+- `index: HTMLElement` — порядковый номер товара.
+- `deleteButton: HTMLButtonElement` — кнопка удаления товара.
+
+### Методы
+
+`render(data: IProduct): HTMLElement` — отображает товар в корзине.
+
+`setIndex(index: number): void` — устанавливает порядковый номер товара.
+
+## Класс Gallery
+
+Отвечает за отображение карточек товаров в каталоге.
+
+### Конструктор
+
+`constructor(container: HTMLElement, events: EventEmitter)` — принимает DOM-элемент галереи и брокер событий.
+
+### Методы
+
+`render(data): HTMLElement` — размещает карточки товаров внутри галереи.
+
+## Класс Modal
+
+Отвечает за отображение модального окна.
+
+### Конструктор
+
+`constructor(container: HTMLElement, events: EventEmitter)` — принимает DOM-элемент модального окна и брокер событий.
+
+### Методы
+
+`render(content: HTMLElement): HTMLElement` — устанавливает содержимое модального окна.
+
+`open(): void` — открывает модальное окно.
+
+`close(): void` — закрывает модальное окно.
+
+## Класс BasketView
+
+Отвечает за отображение содержимого корзины.
+
+### Конструктор
+
+`constructor(container: HTMLElement, events: EventEmitter)` — принимает DOM-элемент корзины и брокер событий.
+
+### Поля
+
+- `list: HTMLElement` — список товаров корзины.
+- `price: HTMLElement` — элемент общей стоимости.
+- `button: HTMLButtonElement` — кнопка оформления заказа.
+
+### Свойства
+
+`items: HTMLElement[]` — список карточек товаров корзины.
+
+`total: number` — общая стоимость товаров.
+
+# Presenter
+
+Класс `Presenter` связывает модели данных, представления и API.
+
+### Конструктор
+
+`constructor(events: EventEmitter, api: LarekApi, productsModel: Products, basketModel: Basket, buyerModel: Buyer, gallery: Gallery, modal: Modal, basketView: BasketView, cardCatalogTemplate: HTMLTemplateElement, cardPreviewTemplate: HTMLTemplateElement, cardBasketTemplate: HTMLTemplateElement)`
+
+Принимает брокер событий, API, модели данных, представления и HTML-шаблоны.
+
+### Методы
+
+`init(): void` — запускает приложение и загрузку каталога.
+
+`loadProducts(): void` — получает каталог товаров через API.
+
+`renderCatalog(items: IProduct[]): void` — создаёт карточки товаров и отображает их в каталоге.
+
+`showPreview(id: string): void` — открывает подробный просмотр выбранного товара.
+
+`updateBasket(): void` — обновляет содержимое корзины и её общую стоимость.
+
+Presenter также обрабатывает события выбора товара, добавления и удаления товаров из корзины, открытия корзины и закрытия модального окна.
+
+# События приложения
+
+Для взаимодействия между Model, View и Presenter используется `EventEmitter`.
+
+Основные события:
+
+- `card:select` — выбор товара в каталоге.
+- `card:buy` — добавление товара в корзину.
+- `basket:open` — открытие корзины.
+- `basket:remove` — удаление товара из корзины.
+- `basket:changed` — изменение содержимого корзины и обновление счётчика.
+- `basket:order` — переход к оформлению заказа.
+- `modal:close` — закрытие модального окна.
