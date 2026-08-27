@@ -3,7 +3,7 @@ import {
 	TBuyerErrors,
 } from '../../types';
 
-import { EventEmitter } from '../base/EventEmitter';
+import { EventEmitter } from '../base/Events';
 
 export class Buyer {
 	private buyer: IBuyer = {

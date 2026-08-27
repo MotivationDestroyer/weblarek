@@ -1,16 +1,12 @@
 import { Component } from '../base/Component';
-import { EventEmitter } from '../base/EventEmitter';
 
 export abstract class Form<T> extends Component<T> {
 	protected form: HTMLFormElement;
 	protected submitButton: HTMLButtonElement;
 	protected errors: HTMLElement;
 
-	constructor(
-		container: HTMLElement,
-		events: EventEmitter
-	) {
-		super(container, events);
+	constructor(container: HTMLElement) {
+		super(container);
 
 		this.form = container.querySelector(
 			'form'

@@ -1,5 +1,5 @@
 import { IBuyer } from '../../../types';
-import { EventEmitter } from '../../base/EventEmitter';
+import { EventEmitter } from '../../base/Events';
 import { Form } from '../Form';
 
 export class ContactsForm extends Form<IBuyer> {
@@ -10,7 +10,7 @@ export class ContactsForm extends Form<IBuyer> {
 		container: HTMLElement,
 		events: EventEmitter
 	) {
-		super(container, events);
+		super(container);
 
 		this.emailInput = container.querySelector(
 			'input[name="email"]'
@@ -25,7 +25,7 @@ export class ContactsForm extends Form<IBuyer> {
 			() => {
 				events.emit(
 					'contacts:email',
-					this.emailInput.value
+					{ email: this.emailInput.value }
 				);
 			}
 		);
@@ -35,7 +35,7 @@ export class ContactsForm extends Form<IBuyer> {
 			() => {
 				events.emit(
 					'contacts:phone',
-					this.phoneInput.value
+					{ phone: this.phoneInput.value }
 				);
 			}
 		);

@@ -1,9 +1,8 @@
 import {
-	IBuyer,
-	TPayment,
+	IBuyer
 } from '../../../types';
 
-import { EventEmitter } from '../../base/EventEmitter';
+import { EventEmitter } from '../../base/Events';
 import { Form } from '../Form';
 
 export class OrderForm extends Form<IBuyer> {
@@ -15,7 +14,7 @@ export class OrderForm extends Form<IBuyer> {
 		container: HTMLElement,
 		events: EventEmitter
 	) {
-		super(container, events);
+		super(container);
 
 		this.cardButton = container.querySelector(
 			'button[name="card"]'
@@ -34,7 +33,7 @@ export class OrderForm extends Form<IBuyer> {
 			() => {
 				events.emit(
 					'order:payment',
-					'online' as TPayment
+					{ payment: 'online' }
 				);
 			}
 		);
@@ -44,7 +43,7 @@ export class OrderForm extends Form<IBuyer> {
 			() => {
 				events.emit(
 					'order:payment',
-					'offline' as TPayment
+					{ payment: 'offline' }
 				);
 			}
 		);
@@ -54,7 +53,7 @@ export class OrderForm extends Form<IBuyer> {
 			() => {
 				events.emit(
 					'order:address',
-					this.addressInput.value
+					{ address: this.addressInput.value }
 				);
 			}
 		);

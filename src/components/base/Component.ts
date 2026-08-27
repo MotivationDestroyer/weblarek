@@ -1,16 +1,12 @@
-import { EventEmitter } from './EventEmitter';
-
 export abstract class Component<T> {
-	protected constructor(
-		protected readonly container: HTMLElement,
-		protected readonly events: EventEmitter
-	) {}
+	protected constructor(protected readonly container: HTMLElement) {
+	}
 
 	protected setImage(
 		element: HTMLImageElement,
 		src: string,
 		alt?: string
-	): void {
+	) {
 		if (element) {
 			element.src = src;
 
@@ -22,7 +18,6 @@ export abstract class Component<T> {
 
 	render(data?: Partial<T>): HTMLElement {
 		Object.assign(this as object, data ?? {});
-
 		return this.container;
 	}
 }

@@ -1,6 +1,5 @@
 import { Card } from '../Card';
-import { IProduct } from '../../../types';
-import { EventEmitter } from '../../base/EventEmitter';
+import { ensureElement } from '../../../utils/utils';
 
 export class CardBasket extends Card {
 	protected index: HTMLElement;
@@ -8,41 +7,25 @@ export class CardBasket extends Card {
 
 	constructor(
 		container: HTMLElement,
-		events: EventEmitter
+		action: () => void
 	) {
-		super(container, events);
+		super(container);
 
-		this.index = container.querySelector(
-			'.basket__item-index'
-		) as HTMLElement;
+		this.index = ensureElement<HTMLElement>(
+			'.basket__item-index',
+			container
+		);
 
-		this.deleteButton = container.querySelector(
-			'.basket__item-delete'
-		) as HTMLButtonElement;
-
-		this.deleteButton.addEventListener('click', () => {
-			this.events.emit(
-				'basket:remove',
-				this.productId
+		this.deleteButton =
+			ensureElement<HTMLButtonElement>(
+				'.basket__item-delete',
+				container
 			);
-		});
-	}
 
-	private productId = '';
-
-	render(data: IProduct): HTMLElement {
-		this.productId = data.id;
-
-		this.index.textContent = '1';
-
-		this.title.textContent = data.title;
-
-		this.price.textContent =
-			data.price !== null
-				? `${data.price} синапсов`
-				: 'Бесценно';
-
-		return this.container;
+		this.deleteButton.addEventListener(
+			'click',
+			action
+		);
 	}
 
 	setIndex(index: number): void {

@@ -1,48 +1,50 @@
-import { IProduct } from '../../../types';
-import { EventEmitter } from '../../base/EventEmitter';
 import { Card } from '../Card';
+import { categoryMap } from '../../../utils/constants';
+import { ensureElement } from '../../../utils/utils';
 
 export class CardCatalog extends Card {
-	protected category: HTMLElement;
-	protected image: HTMLImageElement;
-	protected productId = '';
+	protected categoryElement: HTMLElement;
+	protected imageElement: HTMLImageElement;
 
 	constructor(
 		container: HTMLElement,
-		events: EventEmitter
+		action: () => void
 	) {
-		super(container, events);
+		super(container);
 
-		this.category = container.querySelector(
-			'.card__category'
-		) as HTMLElement;
+		this.categoryElement =
+			ensureElement<HTMLElement>(
+				'.card__category',
+				container
+			);
 
-		this.image = container.querySelector(
-			'.card__image'
-		) as HTMLImageElement;
+		this.imageElement =
+			ensureElement<HTMLImageElement>(
+				'.card__image',
+				container
+			);
 
-		this.container.addEventListener('click', () => {
-			events.emit('card:select', this.productId);
-		});
+		this.container.addEventListener(
+			'click',
+			action
+		);
 	}
 
-	render(data: IProduct): HTMLElement {
-		this.productId = data.id;
+	set category(value: string) {
+		this.categoryElement.textContent = value;
 
-		this.category.textContent = data.category;
-		this.title.textContent = data.title;
-
-		this.price.textContent =
-			data.price !== null
-				? `${data.price} синапсов`
-				: 'Бесценно';
-
-		this.setImage(
-			this.image,
-			data.image,
-			data.title
+		this.categoryElement.classList.add(
+			categoryMap[
+				value as keyof typeof categoryMap
+			]
 		);
+	}
 
-		return this.container;
+	set image(value: string) {
+		this.setImage(
+			this.imageElement,
+			value,
+			this.title
+		);
 	}
 }

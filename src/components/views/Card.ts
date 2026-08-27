@@ -1,23 +1,33 @@
 import { IProduct } from '../../types';
 import { Component } from '../base/Component';
-import { EventEmitter } from '../base/EventEmitter';
+import { ensureElement } from '../../utils/utils';
 
 export abstract class Card extends Component<IProduct> {
-	protected title: HTMLElement;
-	protected price: HTMLElement;
+	protected _title: HTMLElement;
+	protected _price: HTMLElement;
 
-	constructor(
-		container: HTMLElement,
-		events: EventEmitter
-	) {
-		super(container, events);
+	constructor(container: HTMLElement) {
+		super(container);
 
-		this.title = container.querySelector(
-			'.card__title'
-		) as HTMLElement;
+		this._title = ensureElement<HTMLElement>(
+			'.card__title',
+			container
+		);
 
-		this.price = container.querySelector(
-			'.card__price'
-		) as HTMLElement;
+		this._price = ensureElement<HTMLElement>(
+			'.card__price',
+			container
+		);
+	}
+
+	set title(value: string) {
+		this._title.textContent = value;
+	}
+
+	set price(value: number | null) {
+		this._price.textContent =
+			value !== null
+				? `${value} синапсов`
+				: 'Бесценно';
 	}
 }

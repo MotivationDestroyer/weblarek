@@ -1,7 +1,7 @@
 import './scss/styles.scss';
 
 import { Api } from './components/base/Api';
-import { EventEmitter } from './components/base/EventEmitter';
+import { EventEmitter } from './components/base/Events';
 import { LarekApi } from './components/Api/LarekApi';
 
 import { Products } from './components/models/Products';
@@ -16,6 +16,8 @@ import { BasketView } from './components/BasketView';
 import { Presenter } from './components/Presenter';
 
 import { API_URL } from './utils/constants';
+
+import { Counter } from './components/HeaderCounter';
 
 
 const api = new Api(API_URL);
@@ -61,8 +63,7 @@ const basketTemplate =
 
 
 const gallery = new Gallery(
-	galleryElement,
-	events
+	galleryElement
 );
 
 const modal = new Modal(
@@ -81,26 +82,19 @@ const basketView = new BasketView(
 	events
 );
 
+const counter = new Counter(
+	document.querySelector('.header') as HTMLElement
+);
 
-const basketButton =
-	document.querySelector(
-		'.header__basket'
-	) as HTMLButtonElement;
-
-const basketCounter =
-	document.querySelector(
-		'.header__basket-counter'
-	) as HTMLElement;
-
-basketButton.addEventListener('click', () => {
+counter.button.addEventListener('click', () => {
 	events.emit('basket:open');
 });
 
 events.on('basket:changed', () => {
-	basketCounter.textContent =
-		String(basketModel.getCount());
+	counter.render({
+		counter: basketModel.getCount(),
+	});
 });
-
 
 const presenter = new Presenter(
 	events,

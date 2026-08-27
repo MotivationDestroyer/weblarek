@@ -1,5 +1,5 @@
 import { Component } from '../base/Component';
-import { EventEmitter } from '../base/EventEmitter';
+import { EventEmitter } from '../base/Events';
 
 export class Modal
 	extends Component<HTMLElement> {
@@ -11,7 +11,7 @@ export class Modal
 		container: HTMLElement,
 		events: EventEmitter
 	) {
-		super(container, events);
+		super(container);
 
 		this.content = container.querySelector(
 			'.modal__content'

@@ -1,5 +1,5 @@
 import { IProduct } from "../../types";
-import { EventEmitter } from "../base/EventEmitter";
+import { EventEmitter } from "../base/Events";
 
 export class Products {
 	private items: IProduct[] = [];
@@ -12,7 +12,7 @@ export class Products {
 
 		this.events.emit(
 			'products:changed',
-			this.items
+			this.getItems()
 		);
 	}
 
@@ -32,7 +32,7 @@ export class Products {
 
 		this.events.emit(
 			'preview:changed',
-			this.preview
+			this.getPreview() ?? undefined
 		);
 	}
 

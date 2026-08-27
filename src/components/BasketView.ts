@@ -1,5 +1,5 @@
 import { Component } from './base/Component';
-import { EventEmitter } from './base/EventEmitter';
+import { EventEmitter } from './base/Events';
 
 export interface IBasketView {
 	items: HTMLElement[];
@@ -15,7 +15,7 @@ export class BasketView extends Component<IBasketView> {
 		container: HTMLElement,
 		events: EventEmitter
 	) {
-		super(container, events);
+		super(container);
 
 		this.list = container.querySelector(
 			'.basket__list'

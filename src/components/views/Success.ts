@@ -1,5 +1,5 @@
 import { Component } from '../base/Component';
-import { EventEmitter } from '../base/EventEmitter';
+import { EventEmitter } from '../base/Events';
 
 interface ISuccess {
 	total: number;
@@ -15,7 +15,7 @@ export class Success
 		container: HTMLElement,
 		events: EventEmitter
 	) {
-		super(container, events);
+		super(container);
 
 		this.description = container.querySelector(
 			'.order-success__description'

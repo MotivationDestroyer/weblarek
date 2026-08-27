@@ -1,5 +1,4 @@
 import { Component } from '../base/Component';
-import { EventEmitter } from '../base/EventEmitter';
 
 interface IGallery {
 	items: HTMLElement[];
@@ -8,11 +7,8 @@ interface IGallery {
 export class Gallery
 	extends Component<IGallery> {
 
-	constructor(
-		container: HTMLElement,
-		events: EventEmitter
-	) {
-		super(container, events);
+	constructor(container: HTMLElement) {
+		super(container);
 	}
 
 	render(

@@ -1,62 +1,72 @@
-import {Card} from '../Card';
-import { IProduct } from "../../../types";
-import { EventEmitter } from '../../base/EventEmitter';
+import { Card } from '../Card';
+import { categoryMap } from '../../../utils/constants';
+import { ensureElement } from '../../../utils/utils';
 
 export class CardPreview extends Card {
 	protected cardText: HTMLElement;
 	protected cardButton: HTMLButtonElement;
-	protected category: HTMLElement;
-	protected image: HTMLImageElement;
-	protected productId = '';
+	protected categoryElement: HTMLElement;
+	protected imageElement: HTMLImageElement;
 
 	constructor(
 		container: HTMLElement,
-		events: EventEmitter
+		action: () => void
 	) {
-		super(container, events);
+		super(container);
 
-		this.cardText = container.querySelector(
-			'.card__text'
-		) as HTMLElement;
-
-		this.cardButton = container.querySelector(
-			'.card__button'
-		) as HTMLButtonElement;
-
-		this.category = container.querySelector(
-			'.card__category'
-		) as HTMLElement;
-
-		this.image = container.querySelector(
-			'.card__image'
-		) as HTMLImageElement;
-
-		this.cardButton.addEventListener('click', () => {
-			events.emit('card:buy', this.productId);
-		});
-	}
-
-	render(data: IProduct): HTMLElement {
-		this.productId = data.id;
-
-		this.category.textContent = data.category;
-		this.title.textContent = data.title;
-
-		this.price.textContent =
-			data.price !== null
-				? `${data.price} синапсов`
-				: 'Бесценно';
-
-		this.cardText.textContent = data.description;
-
-		this.setImage(
-			this.image,
-			data.image,
-			data.title
+		this.cardText = ensureElement<HTMLElement>(
+			'.card__text',
+			container
 		);
 
-		this.cardButton.disabled = data.price === null;
+		this.cardButton =
+			ensureElement<HTMLButtonElement>(
+				'.card__button',
+				container
+			);
 
-		return this.container;
+		this.categoryElement =
+			ensureElement<HTMLElement>(
+				'.card__category',
+				container
+			);
+
+		this.imageElement =
+			ensureElement<HTMLImageElement>(
+				'.card__image',
+				container
+			);
+
+		this.cardButton.addEventListener(
+			'click',
+			action
+		);
+	}
+
+	set category(value: string) {
+		this.categoryElement.textContent = value;
+
+		this.categoryElement.className =
+			`card__category ${categoryMap[value as keyof typeof categoryMap]}`;
+	}
+
+	set image(value: string) {
+		this.setImage(
+			this.imageElement,
+			value,
+			this.title
+		);
+	}
+
+	set description(value: string) {
+		this.cardText.textContent = value;
+	}
+
+	set buttonText(value: string) {
+		this.cardButton.textContent = value;
+	}
+
+	set buttonDisabled(value: boolean) {
+		this.cardButton.disabled = value;
 	}
 }

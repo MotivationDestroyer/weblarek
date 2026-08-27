@@ -1,5 +1,5 @@
 import { IProduct } from "../../types";
-import { EventEmitter } from "../base/EventEmitter";
+import { EventEmitter } from "../base/Events";
 
 export class Basket {
 	private items: IProduct[] = [];
