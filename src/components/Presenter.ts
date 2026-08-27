@@ -14,8 +14,15 @@ import { Gallery } from './views/Gallery';
 import { Modal } from './views/Modal';
 import { BasketView } from './BasketView';
 
+import { OrderForm } from './views/Form/OrderForm';
+import { ContactsForm } from './views/Form/ContactsForm';
+import { Success } from './views/Success';
+
 export class Presenter {
 	private cardPreview: CardPreview;
+	private orderForm: OrderForm;
+	private contactsForm: ContactsForm;
+	private success: Success;
 
 	constructor(
 		private events: EventEmitter,
@@ -28,8 +35,12 @@ export class Presenter {
 		private basketView: BasketView,
 		private cardCatalogTemplate: HTMLTemplateElement,
 		private cardPreviewTemplate: HTMLTemplateElement,
-		private cardBasketTemplate: HTMLTemplateElement
+		private cardBasketTemplate: HTMLTemplateElement,
+		private orderTemplate: HTMLTemplateElement,
+		private contactsTemplate: HTMLTemplateElement,
+		private successTemplate: HTMLTemplateElement
 	) {
+
 		const previewClone =
 			this.cardPreviewTemplate.content
 				.firstElementChild!
@@ -52,7 +63,36 @@ export class Presenter {
 			}
 		);
 
-		// Выбор карточки товара
+		const orderClone =
+			this.orderTemplate.content
+				.firstElementChild!
+				.cloneNode(true) as HTMLElement;
+
+		this.orderForm = new OrderForm(
+			orderClone,
+			this.events
+		);
+
+		const contactsClone =
+			this.contactsTemplate.content
+				.firstElementChild!
+				.cloneNode(true) as HTMLElement;
+
+		this.contactsForm = new ContactsForm(
+			contactsClone,
+			this.events
+		);
+
+		const successClone =
+			this.successTemplate.content
+				.firstElementChild!
+				.cloneNode(true) as HTMLElement;
+
+		this.success = new Success(
+			successClone,
+			this.events
+		);
+
 		this.events.on<{ id: string }>(
 			'card:select',
 			({ id }) => {
@@ -61,7 +101,6 @@ export class Presenter {
 			}
 		);
 
-		// Действие с товаром в предпросмотре
 		this.events.on<{ id: string }>(
 			'card:action',
 			({ id }) => {
@@ -82,7 +121,6 @@ export class Presenter {
 			}
 		);
 
-		// Закрытие модального окна
 		this.events.on(
 			'modal:close',
 			() => {
@@ -90,7 +128,6 @@ export class Presenter {
 			}
 		);
 
-		// Корзина изменилась — обновляем представление
 		this.events.on(
 			'basket:changed',
 			() => {
@@ -98,7 +135,6 @@ export class Presenter {
 			}
 		);
 
-		// Открытие корзины
 		this.events.on(
 			'basket:open',
 			() => {
@@ -110,11 +146,117 @@ export class Presenter {
 			}
 		);
 
-		// Удаление товара из корзины
 		this.events.on<{ id: string }>(
 			'basket:remove',
 			({ id }) => {
 				this.basketModel.removeItem(id);
+			}
+		);
+
+		this.events.on(
+			'basket:order',
+			() => {
+				this.openOrderForm();
+			}
+		);
+
+		this.events.on<{
+			payment: 'online' | 'offline';
+		}>(
+			'order:payment',
+			({ payment }) => {
+				this.buyerModel.setBuyer({
+					payment
+				});
+
+				this.validateOrder();
+			}
+		);
+
+		this.events.on<{
+			address: string;
+		}>(
+			'order:address',
+			({ address }) => {
+				this.buyerModel.setBuyer({
+					address
+				});
+
+				this.validateOrder();
+			}
+		);
+
+		this.events.on(
+			'order:submit',
+			() => {
+				const errors =
+					this.buyerModel.validate();
+
+				const orderErrors: string[] = [];
+
+				if (errors.payment) {
+					orderErrors.push(errors.payment);
+				}
+
+				if (errors.address) {
+					orderErrors.push(errors.address);
+				}
+
+				if (orderErrors.length > 0) {
+					this.orderForm.setErrors(
+						orderErrors.join(', ')
+					);
+
+					return;
+				}
+
+				this.orderForm.setErrors('');
+
+				this.modal.render(
+					this.contactsForm.render(
+						this.buyerModel.getBuyer()
+					)
+				);
+			}
+		);
+
+		this.events.on<{
+			email: string;
+		}>(
+			'contacts:email',
+			({ email }) => {
+				this.buyerModel.setBuyer({
+					email
+				});
+
+				this.validateContacts();
+			}
+		);
+
+		this.events.on<{
+			phone: string;
+		}>(
+			'contacts:phone',
+			({ phone }) => {
+				this.buyerModel.setBuyer({
+					phone
+				});
+
+				this.validateContacts();
+			}
+		);
+
+		this.events.on(
+			'contacts:submit',
+			() => {
+				this.submitOrder();
+			}
+		);
+
+		this.events.on(
+			'success:close',
+			() => {
+				this.modal.close();
 			}
 		);
 	}
@@ -128,6 +270,11 @@ export class Presenter {
 		this.api
 			.getProducts()
 			.then((data) => {
+				console.log(
+					'Каталог товаров:',
+					data.items
+				);
+
 				this.productsModel.setItems(
 					data.items
 				);
@@ -182,7 +329,7 @@ export class Presenter {
 		}
 
 		this.cardPreview.buttonText =
-			this.basketModel.hasItem(product.id)
+			this.basketModel.hasItem(id)
 				? 'Удалить из корзины'
 				: 'В корзину';
 
@@ -230,5 +377,104 @@ export class Presenter {
 			items: cards,
 			total: this.basketModel.getTotal()
 		});
+	}
+
+	private openOrderForm(): void {
+		this.modal.render(
+			this.orderForm.render(
+				this.buyerModel.getBuyer()
+			)
+		);
+
+		this.validateOrder();
+
+		this.modal.open();
+	}
+
+	private validateOrder(): void {
+		const errors =
+			this.buyerModel.validate();
+
+		const orderErrors: string[] = [];
+
+		if (errors.payment) {
+			orderErrors.push(errors.payment);
+		}
+
+		if (errors.address) {
+			orderErrors.push(errors.address);
+		}
+
+		this.orderForm.setErrors(
+			orderErrors.join(', ')
+		);
+	}
+
+	private validateContacts(): void {
+		const errors =
+			this.buyerModel.validate();
+
+		const contactErrors: string[] = [];
+
+		if (errors.email) {
+			contactErrors.push(errors.email);
+		}
+
+		if (errors.phone) {
+			contactErrors.push(errors.phone);
+		}
+
+		this.contactsForm.setErrors(
+			contactErrors.join(', ')
+		);
+	}
+
+	private submitOrder(): void {
+		const errors =
+			this.buyerModel.validate();
+
+		if (Object.keys(errors).length > 0) {
+			this.validateContacts();
+			return;
+		}
+
+		const buyer =
+			this.buyerModel.getBuyer();
+
+		const order = {
+			...buyer,
+
+			items: this.basketModel
+				.getItems()
+				.map((item) => item.id),
+
+			total: this.basketModel.getTotal()
+		};
+
+		console.log(
+			'Отправляем заказ:',
+			order
+		);
+
+		this.api
+			.orderProducts(order)
+			.then((result) => {
+				this.modal.render(
+					this.success.render({
+						total: result.total
+					})
+				);
+
+				this.modal.open();
+
+				this.basketModel.clear();
+				this.buyerModel.clear();
+			})
+			.catch((error) => {
+				console.error(
+					'Ошибка при оформлении заказа:',
+					error
+				);
+			});
 	}
 }
