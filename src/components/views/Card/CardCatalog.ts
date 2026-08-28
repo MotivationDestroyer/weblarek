@@ -3,8 +3,12 @@ import { Card } from '../Card';
 import { categoryMap } from '../../../utils/constants';
 import { ensureElement } from '../../../utils/utils';
 
-export interface ICardCatalog extends IProduct {
-	image: string;
+export interface ICardCatalog
+	extends Omit<IProduct, 'image'> {
+	image: {
+		src: string;
+		alt: string;
+	};
 }
 
 export class CardCatalog extends Card<ICardCatalog> {
@@ -35,22 +39,20 @@ export class CardCatalog extends Card<ICardCatalog> {
 		);
 	}
 
-	set category(value: string) {
-		this.categoryElement.textContent = value;
+set category(value: string) {
+	this.categoryElement.textContent = value;
 
-		this.categoryElement.className =
-			`card__category ${
-				categoryMap[
-					value as keyof typeof categoryMap
-				]
-			}`;
-	}
+	this.categoryElement.className =
+		`card__category ${
+			categoryMap[value as keyof typeof categoryMap]
+		}`;
+}
 
-	set image(value: string) {
-		this.setImage(
-			this.imageElement,
-			value,
-			this.title
-		);
-	}
+set image(value: { src: string; alt: string }) {
+	this.setImage(
+		this.imageElement,
+		value.src,
+		value.alt
+	);
+}
 }

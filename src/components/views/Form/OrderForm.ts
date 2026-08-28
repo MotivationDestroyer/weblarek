@@ -3,9 +3,11 @@ import { EventEmitter } from '../../base/Events';
 import { ensureElement } from '../../../utils/utils';
 import { Form } from '../Form';
 
+
 export class OrderForm extends Form<IBuyer> {
-	protected paymentButtons: HTMLButtonElement[];
 	protected addressInput: HTMLInputElement;
+	protected onlineButton: HTMLButtonElement;
+	protected offlineButton: HTMLButtonElement;
 
 	constructor(
 		container: HTMLElement,
@@ -13,39 +15,47 @@ export class OrderForm extends Form<IBuyer> {
 	) {
 		super(container);
 
-		this.paymentButtons = [
-			ensureElement<HTMLButtonElement>(
-				'button[name="card"]',
-				container
-			),
-			ensureElement<HTMLButtonElement>(
-				'button[name="cash"]',
-				container
-			),
-		];
-
 		this.addressInput =
 			ensureElement<HTMLInputElement>(
 				'input[name="address"]',
 				container
 			);
 
-		this.paymentButtons.forEach((button) => {
-			button.addEventListener(
-				'click',
-				() => {
-					const payment: TPayment =
-						button.name === 'card'
-							? 'online'
-							: 'offline';
-
-					this.events.emit(
-						'order:payment',
-						{ payment }
-					);
-				}
+		this.onlineButton =
+			ensureElement<HTMLButtonElement>(
+				'button[name="card"]',
+				container
 			);
-		});
+
+		this.offlineButton =
+			ensureElement<HTMLButtonElement>(
+				'button[name="cash"]',
+				container
+			);
+
+		this.onlineButton.addEventListener(
+			'click',
+			() => {
+				this.events.emit(
+					'order:payment',
+					{
+						payment: 'online'
+					}
+				);
+			}
+		);
+
+		this.offlineButton.addEventListener(
+			'click',
+			() => {
+				this.events.emit(
+					'order:payment',
+					{
+						payment: 'offline'
+					}
+				);
+			}
+		);
 
 		this.addressInput.addEventListener(
 			'input',
@@ -54,7 +64,7 @@ export class OrderForm extends Form<IBuyer> {
 					'order:address',
 					{
 						address:
-							this.addressInput.value,
+							this.addressInput.value
 					}
 				);
 			}
@@ -73,19 +83,14 @@ export class OrderForm extends Form<IBuyer> {
 	}
 
 	set payment(value: TPayment) {
-		this.paymentButtons.forEach(
-			(button) => {
-				const active =
-					(value === 'online' &&
-						button.name === 'card') ||
-					(value === 'offline' &&
-						button.name === 'cash');
+		this.onlineButton.classList.toggle(
+			'button_alt',
+			value !== 'online'
+		);
 
-				button.classList.toggle(
-					'button_alt-active',
-					active
-				);
-			}
+		this.offlineButton.classList.toggle(
+			'button_alt',
+			value !== 'offline'
 		);
 	}
 
