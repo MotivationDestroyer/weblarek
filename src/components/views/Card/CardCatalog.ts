@@ -1,8 +1,13 @@
+import { IProduct } from '../../../types';
 import { Card } from '../Card';
 import { categoryMap } from '../../../utils/constants';
 import { ensureElement } from '../../../utils/utils';
 
-export class CardCatalog extends Card {
+export interface ICardCatalog extends IProduct {
+	image: string;
+}
+
+export class CardCatalog extends Card<ICardCatalog> {
 	protected categoryElement: HTMLElement;
 	protected imageElement: HTMLImageElement;
 
@@ -33,11 +38,12 @@ export class CardCatalog extends Card {
 	set category(value: string) {
 		this.categoryElement.textContent = value;
 
-		this.categoryElement.classList.add(
-			categoryMap[
-				value as keyof typeof categoryMap
-			]
-		);
+		this.categoryElement.className =
+			`card__category ${
+				categoryMap[
+					value as keyof typeof categoryMap
+				]
+			}`;
 	}
 
 	set image(value: string) {

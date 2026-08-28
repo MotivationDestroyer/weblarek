@@ -1,31 +1,59 @@
 import { Component } from '../base/Component';
 import { EventEmitter } from '../base/Events';
+import { ensureElement } from '../../utils/utils';
 
-export class Modal
-	extends Component<HTMLElement> {
+interface IModalData {
+	content: HTMLElement;
+}
 
-	protected content: HTMLElement;
+export class Modal extends Component<IModalData> {
+	protected contentElement: HTMLElement;
 	protected closeButton: HTMLButtonElement;
 
 	constructor(
 		container: HTMLElement,
-		events: EventEmitter
+		protected events: EventEmitter
 	) {
 		super(container);
 
-		this.content = container.querySelector(
-			'.modal__content'
-		) as HTMLElement;
+		this.contentElement =
+			ensureElement<HTMLElement>(
+				'.modal__content',
+				container
+			);
 
-		this.closeButton = container.querySelector(
-			'.modal__close'
-		) as HTMLButtonElement;
+		this.closeButton =
+			ensureElement<HTMLButtonElement>(
+				'.modal__close',
+				container
+			);
 
+		// Закрытие по крестику
 		this.closeButton.addEventListener(
 			'click',
 			() => {
-				events.emit('modal:close');
+				this.events.emit('modal:close');
 			}
+		);
+
+		// Закрытие по клику на оверлей
+		this.container.addEventListener(
+			'click',
+			(event) => {
+				if (
+					event.target === this.container
+				) {
+					this.events.emit(
+						'modal:close'
+					);
+				}
+			}
+		);
+	}
+
+	set content(value: HTMLElement) {
+		this.contentElement.replaceChildren(
+			value
 		);
 	}
 
@@ -39,13 +67,5 @@ export class Modal
 		this.container.classList.remove(
 			'modal_active'
 		);
-	}
-
-	render(
-		data: HTMLElement
-	): HTMLElement {
-		this.content.replaceChildren(data);
-
-		return this.container;
 	}
 }

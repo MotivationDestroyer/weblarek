@@ -1,5 +1,6 @@
 import { Component } from './base/Component';
 import { EventEmitter } from './base/Events';
+import { ensureElement } from '../utils/utils';
 
 export interface IBasketView {
 	items: HTMLElement[];
@@ -13,24 +14,27 @@ export class BasketView extends Component<IBasketView> {
 
 	constructor(
 		container: HTMLElement,
-		events: EventEmitter
+		protected events: EventEmitter
 	) {
 		super(container);
 
-		this.list = container.querySelector(
-			'.basket__list'
-		) as HTMLElement;
+		this.list = ensureElement<HTMLElement>(
+			'.basket__list',
+			container
+		);
 
-		this.price = container.querySelector(
-			'.basket__price'
-		) as HTMLElement;
+		this.price = ensureElement<HTMLElement>(
+			'.basket__price',
+			container
+		);
 
-		this.button = container.querySelector(
-			'.basket__button'
-		) as HTMLButtonElement;
+		this.button = ensureElement<HTMLButtonElement>(
+			'.basket__button',
+			container
+		);
 
 		this.button.addEventListener('click', () => {
-			events.emit('basket:order');
+			this.events.emit('basket:order');
 		});
 	}
 

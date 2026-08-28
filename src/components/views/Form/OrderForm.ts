@@ -1,59 +1,61 @@
-import {
-	IBuyer
-} from '../../../types';
-
+import { IBuyer, TPayment } from '../../../types';
 import { EventEmitter } from '../../base/Events';
+import { ensureElement } from '../../../utils/utils';
 import { Form } from '../Form';
 
 export class OrderForm extends Form<IBuyer> {
-	protected cardButton: HTMLButtonElement;
-	protected cashButton: HTMLButtonElement;
+	protected paymentButtons: HTMLButtonElement[];
 	protected addressInput: HTMLInputElement;
 
 	constructor(
 		container: HTMLElement,
-		events: EventEmitter
+		protected events: EventEmitter
 	) {
 		super(container);
 
-		this.cardButton = container.querySelector(
-			'button[name="card"]'
-		) as HTMLButtonElement;
+		this.paymentButtons = [
+			ensureElement<HTMLButtonElement>(
+				'button[name="card"]',
+				container
+			),
+			ensureElement<HTMLButtonElement>(
+				'button[name="cash"]',
+				container
+			),
+		];
 
-		this.cashButton = container.querySelector(
-			'button[name="cash"]'
-		) as HTMLButtonElement;
+		this.addressInput =
+			ensureElement<HTMLInputElement>(
+				'input[name="address"]',
+				container
+			);
 
-		this.addressInput = container.querySelector(
-			'input[name="address"]'
-		) as HTMLInputElement;
+		this.paymentButtons.forEach((button) => {
+			button.addEventListener(
+				'click',
+				() => {
+					const payment: TPayment =
+						button.name === 'card'
+							? 'online'
+							: 'offline';
 
-		this.cardButton.addEventListener(
-			'click',
-			() => {
-				events.emit(
-					'order:payment',
-					{ payment: 'online' }
-				);
-			}
-		);
-
-		this.cashButton.addEventListener(
-			'click',
-			() => {
-				events.emit(
-					'order:payment',
-					{ payment: 'offline' }
-				);
-			}
-		);
+					this.events.emit(
+						'order:payment',
+						{ payment }
+					);
+				}
+			);
+		});
 
 		this.addressInput.addEventListener(
 			'input',
 			() => {
-				events.emit(
+				this.events.emit(
 					'order:address',
-					{ address: this.addressInput.value }
+					{
+						address:
+							this.addressInput.value,
+					}
 				);
 			}
 		);
@@ -63,37 +65,36 @@ export class OrderForm extends Form<IBuyer> {
 			(event) => {
 				event.preventDefault();
 
-				events.emit('order:submit');
+				this.events.emit(
+					'order:submit'
+				);
 			}
 		);
 	}
 
-	render(
-		data: Partial<IBuyer>
-	): HTMLElement {
-		if (data.payment) {
-			this.cardButton.classList.toggle(
-				'button_alt-active',
-				data.payment === 'online'
-			);
+	set payment(value: TPayment) {
+		this.paymentButtons.forEach(
+			(button) => {
+				const active =
+					(value === 'online' &&
+						button.name === 'card') ||
+					(value === 'offline' &&
+						button.name === 'cash');
 
-			this.cashButton.classList.toggle(
-				'button_alt-active',
-				data.payment === 'offline'
-			);
-		}
+				button.classList.toggle(
+					'button_alt-active',
+					active
+				);
+			}
+		);
+	}
 
-		if (data.address !== undefined) {
-			this.addressInput.value =
-				data.address;
-		}
-
-		return this.container;
+	set address(value: string) {
+		this.addressInput.value = value;
 	}
 
 	setErrors(errors: string): void {
 		this.errors.textContent = errors;
-
 		this.submitButton.disabled =
 			Boolean(errors);
 	}

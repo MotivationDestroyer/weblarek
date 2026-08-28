@@ -1,6 +1,7 @@
 import { IBuyer } from '../../../types';
 import { EventEmitter } from '../../base/Events';
 import { Form } from '../Form';
+import { ensureElement } from '../../../utils/utils';
 
 export class ContactsForm extends Form<IBuyer> {
 	protected emailInput: HTMLInputElement;
@@ -8,24 +9,30 @@ export class ContactsForm extends Form<IBuyer> {
 
 	constructor(
 		container: HTMLElement,
-		events: EventEmitter
+		protected events: EventEmitter
 	) {
 		super(container);
 
-		this.emailInput = container.querySelector(
-			'input[name="email"]'
-		) as HTMLInputElement;
+		this.emailInput =
+			ensureElement<HTMLInputElement>(
+				'input[name="email"]',
+				container
+			);
 
-		this.phoneInput = container.querySelector(
-			'input[name="phone"]'
-		) as HTMLInputElement;
+		this.phoneInput =
+			ensureElement<HTMLInputElement>(
+				'input[name="phone"]',
+				container
+			);
 
 		this.emailInput.addEventListener(
 			'input',
 			() => {
-				events.emit(
+				this.events.emit(
 					'contacts:email',
-					{ email: this.emailInput.value }
+					{
+						email: this.emailInput.value
+					}
 				);
 			}
 		);
@@ -33,9 +40,11 @@ export class ContactsForm extends Form<IBuyer> {
 		this.phoneInput.addEventListener(
 			'input',
 			() => {
-				events.emit(
+				this.events.emit(
 					'contacts:phone',
-					{ phone: this.phoneInput.value }
+					{
+						phone: this.phoneInput.value
+					}
 				);
 			}
 		);
@@ -45,32 +54,23 @@ export class ContactsForm extends Form<IBuyer> {
 			(event) => {
 				event.preventDefault();
 
-				events.emit(
+				this.events.emit(
 					'contacts:submit'
 				);
 			}
 		);
 	}
 
-	render(
-		data: Partial<IBuyer>
-	): HTMLElement {
-		if (data.email !== undefined) {
-			this.emailInput.value =
-				data.email;
-		}
+	set email(value: string) {
+		this.emailInput.value = value;
+	}
 
-		if (data.phone !== undefined) {
-			this.phoneInput.value =
-				data.phone;
-		}
-
-		return this.container;
+	set phone(value: string) {
+		this.phoneInput.value = value;
 	}
 
 	setErrors(errors: string): void {
 		this.errors.textContent = errors;
-
 		this.submitButton.disabled =
 			Boolean(errors);
 	}

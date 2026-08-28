@@ -1,8 +1,13 @@
+import { IProduct } from '../../../types';
 import { Card } from '../Card';
 import { ensureElement } from '../../../utils/utils';
 
-export class CardBasket extends Card {
-	protected index: HTMLElement;
+interface ICardBasket extends IProduct {
+	index: number;
+}
+
+export class CardBasket extends Card<ICardBasket> {
+	protected indexElement: HTMLElement;
 	protected deleteButton: HTMLButtonElement;
 
 	constructor(
@@ -11,10 +16,11 @@ export class CardBasket extends Card {
 	) {
 		super(container);
 
-		this.index = ensureElement<HTMLElement>(
-			'.basket__item-index',
-			container
-		);
+		this.indexElement =
+			ensureElement<HTMLElement>(
+				'.basket__item-index',
+				container
+			);
 
 		this.deleteButton =
 			ensureElement<HTMLButtonElement>(
@@ -28,7 +34,8 @@ export class CardBasket extends Card {
 		);
 	}
 
-	setIndex(index: number): void {
-		this.index.textContent = String(index);
+	set index(value: number) {
+		this.indexElement.textContent =
+			String(value);
 	}
 }

@@ -1,8 +1,14 @@
+import { IProduct } from '../../../types';
 import { Card } from '../Card';
 import { categoryMap } from '../../../utils/constants';
 import { ensureElement } from '../../../utils/utils';
 
-export class CardPreview extends Card {
+interface ICardPreview extends IProduct {
+	buttonText: string;
+	buttonDisabled: boolean;
+}
+
+export class CardPreview extends Card<ICardPreview> {
 	protected cardText: HTMLElement;
 	protected cardButton: HTMLButtonElement;
 	protected categoryElement: HTMLElement;
@@ -50,11 +56,11 @@ export class CardPreview extends Card {
 			`card__category ${categoryMap[value as keyof typeof categoryMap]}`;
 	}
 
-	set image(value: string) {
+	set image(value: { src: string; alt: string }) {
 		this.setImage(
 			this.imageElement,
-			value,
-			this.title
+			value.src,
+			value.alt
 		);
 	}
 
