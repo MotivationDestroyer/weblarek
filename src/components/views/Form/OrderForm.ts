@@ -82,7 +82,7 @@ export class OrderForm extends Form<IBuyer> {
 		);
 	}
 
-	set payment(value: TPayment) {
+	set payment(value: TPayment | null) {
 		this.onlineButton.classList.toggle(
 			'button_alt',
 			value !== 'online'

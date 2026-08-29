@@ -27,7 +27,7 @@ export interface IProductsData {
 export type TPayment = 'online' | 'offline';
 
 export interface IBuyer {
-	payment: TPayment;
+	payment: TPayment | null;
 	email: string;
 	phone: string;
 	address: string;

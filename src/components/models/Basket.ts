@@ -12,7 +12,7 @@ export class Basket {
 
 			this.events.emit(
 				'basket:changed',
-				this.items
+				this.getItems()
 			);
 		}
 	}
@@ -24,7 +24,7 @@ export class Basket {
 
 		this.events.emit(
 			'basket:changed',
-			this.items
+			this.getItems()
 		);
 	}
 
@@ -37,7 +37,7 @@ export class Basket {
 
 		this.events.emit(
 			'basket:changed',
-			this.items
+			this.getItems()
 		);
 	}
 

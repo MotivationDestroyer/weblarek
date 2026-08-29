@@ -32,6 +32,9 @@ import { BasketView } from './BasketView';
 import { OrderForm } from './views/Form/OrderForm';
 import { ContactsForm } from './views/Form/ContactsForm';
 import { Success } from './views/Success';
+import { Counter } from './HeaderCounter';
+
+import { CDN_URL } from '../utils/constants';
 
 export class Presenter {
 	private cardPreview: CardPreview;
@@ -53,11 +56,9 @@ export class Presenter {
 		private cardBasketTemplate: HTMLTemplateElement,
 		private orderTemplate: HTMLTemplateElement,
 		private contactsTemplate: HTMLTemplateElement,
-		private successTemplate: HTMLTemplateElement
+		private successTemplate: HTMLTemplateElement,
+		private counter: Counter
 	) {
-		// ==========================================
-		// CARD PREVIEW
-		// ==========================================
 
 		const previewClone =
 			this.cardPreviewTemplate.content
@@ -83,9 +84,6 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// ORDER FORM
-		// ==========================================
 
 		const orderClone =
 			this.orderTemplate.content
@@ -96,10 +94,6 @@ export class Presenter {
 			orderClone,
 			this.events
 		);
-
-		// ==========================================
-		// CONTACTS FORM
-		// ==========================================
 
 		const contactsClone =
 			this.contactsTemplate.content
@@ -112,9 +106,6 @@ export class Presenter {
 				this.events
 			);
 
-		// ==========================================
-		// SUCCESS
-		// ==========================================
 
 		const successClone =
 			this.successTemplate.content
@@ -126,20 +117,12 @@ export class Presenter {
 			this.events
 		);
 
-		// ==========================================
-		// PRODUCTS
-		// ==========================================
-
 		this.events.on<IProduct[]>(
 			'products:changed',
 			(items) => {
 				this.renderCatalog(items);
 			}
 		);
-
-		// ==========================================
-		// CARD SELECT
-		// ==========================================
 
 		this.events.on<{ id: string }>(
 			'card:select',
@@ -148,9 +131,6 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// PREVIEW CHANGED
-		// ==========================================
 
 		this.events.on<IProduct>(
 			'preview:changed',
@@ -158,10 +138,6 @@ export class Presenter {
 				this.showPreview(product.id);
 			}
 		);
-
-		// ==========================================
-		// CARD ACTION
-		// ==========================================
 
 		this.events.on<{ id: string }>(
 			'card:action',
@@ -187,10 +163,6 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// MODAL CLOSE
-		// ==========================================
-
 		this.events.on(
 			'modal:close',
 			() => {
@@ -198,20 +170,12 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// BASKET CHANGED
-		// ==========================================
-
 		this.events.on(
 			'basket:changed',
 			() => {
 				this.updateBasket();
 			}
 		);
-
-		// ==========================================
-		// BASKET OPEN
-		// ==========================================
 
 		this.events.on(
 			'basket:open',
@@ -225,20 +189,12 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// BASKET REMOVE
-		// ==========================================
-
 		this.events.on<{ id: string }>(
 			'basket:remove',
 			({ id }) => {
 				this.basketModel.removeItem(id);
 			}
 		);
-
-		// ==========================================
-		// BASKET ORDER
-		// ==========================================
 
 		this.events.on(
 			'basket:order',
@@ -247,21 +203,9 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// BUYER CHANGED
-		// ==========================================
-
 		this.events.on<IBuyer>(
 			'buyer:changed',
 			(buyer) => {
-				/*
-				 * Модель Buyer изменилась.
-				 *
-				 * Здесь обновляем представления.
-				 * Никакого render сразу после setBuyer
-				 * в обработчиках ниже нет.
-				 */
-
 				this.orderForm.render(
 					buyer
 				);
@@ -275,10 +219,6 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// PAYMENT
-		// ==========================================
-
 		this.events.on<{
 			payment: 'online' | 'offline';
 		}>(
@@ -290,10 +230,6 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// ADDRESS
-		// ==========================================
-
 		this.events.on<{
 			address: string;
 		}>(
@@ -304,10 +240,6 @@ export class Presenter {
 				});
 			}
 		);
-
-		// ==========================================
-		// ORDER SUBMIT
-		// ==========================================
 
 		this.events.on(
 			'order:submit',
@@ -351,10 +283,6 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// EMAIL
-		// ==========================================
-
 		this.events.on<{
 			email: string;
 		}>(
@@ -365,10 +293,6 @@ export class Presenter {
 				});
 			}
 		);
-
-		// ==========================================
-		// PHONE
-		// ==========================================
 
 		this.events.on<{
 			phone: string;
@@ -381,10 +305,6 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// CONTACTS SUBMIT
-		// ==========================================
-
 		this.events.on(
 			'contacts:submit',
 			() => {
@@ -392,41 +312,28 @@ export class Presenter {
 			}
 		);
 
-		// ==========================================
-		// SUCCESS CLOSE
-		// ==========================================
-
 		this.events.on(
 			'success:close',
 			() => {
 				this.modal.close();
 			}
 		);
+		this.events.on('basket:changed', () => {
+			this.counter.render({
+				counter: this.basketModel.getItems().length
+			});
+		});
 	}
-
-	// ============================================
-	// INIT
-	// ============================================
 
 	init(): void {
 		this.loadProducts();
 		this.updateBasket();
 	}
 
-	// ============================================
-	// LOAD PRODUCTS
-	// ============================================
-
 	private loadProducts(): void {
 		this.api
 			.getProducts()
 			.then((data) => {
-				/*
-				 * Только обновляем модель.
-				 *
-				 * Products сама отправит
-				 * products:changed.
-				 */
 				this.productsModel.setItems(
 					data.items
 				);
@@ -438,10 +345,6 @@ export class Presenter {
 				);
 			});
 	}
-
-	// ============================================
-	// RENDER CATALOG
-	// ============================================
 
 	private renderCatalog(
 		items: IProduct[]
@@ -473,7 +376,7 @@ export class Presenter {
 					...item,
 
 					image: {
-						src: item.image,
+						src: CDN_URL + item.image,
 						alt: item.title
 					}
 				};
@@ -488,10 +391,6 @@ export class Presenter {
 			items: cards
 		});
 	}
-
-	// ============================================
-	// SHOW PREVIEW
-	// ============================================
 
 	private showPreview(
 		id: string
@@ -508,16 +407,17 @@ export class Presenter {
 			...product,
 
 			image: {
-				src: product.image,
+				src: CDN_URL + product.image,
 				alt: product.title
 			},
 
 			buttonText:
-				this.basketModel.hasItem(
-					product.id
-				)
-					? 'Удалить из корзины'
-					: 'В корзину',
+            product.price === null
+                ? 'Недоступно'
+                : this.basketModel.hasItem(product.id)
+                    ? 'Удалить из корзины'
+                    : 'В корзину',
+        
 
 			buttonDisabled:
 				product.price === null
@@ -533,9 +433,6 @@ export class Presenter {
 		this.modal.open();
 	}
 
-	// ============================================
-	// UPDATE BASKET
-	// ============================================
 
 	private updateBasket(): void {
 		const items =
@@ -582,10 +479,6 @@ export class Presenter {
 		});
 	}
 
-	// ============================================
-	// OPEN ORDER
-	// ============================================
-
 	private openOrderForm(): void {
 		this.modal.render({
 			content:
@@ -598,10 +491,6 @@ export class Presenter {
 
 		this.modal.open();
 	}
-
-	// ============================================
-	// VALIDATE ORDER
-	// ============================================
 
 	private validateOrder(): void {
 		const errors =
@@ -627,10 +516,6 @@ export class Presenter {
 		);
 	}
 
-	// ============================================
-	// VALIDATE CONTACTS
-	// ============================================
-
 	private validateContacts(): void {
 		const errors =
 			this.buyerModel.validate();
@@ -654,10 +539,6 @@ export class Presenter {
 			contactErrors.join(', ')
 		);
 	}
-
-	// ============================================
-	// SUBMIT ORDER
-	// ============================================
 
 	private submitOrder(): void {
 		const errors =

@@ -17,6 +17,7 @@ import { Counter } from './components/HeaderCounter';
 
 import { API_URL } from './utils/constants';
 
+import { ensureElement } from './utils/utils';
 
 const api = new Api(API_URL);
 
@@ -35,51 +36,24 @@ const buyerModel =
 	new Buyer(events);
 
 
-const galleryElement =
-	document.querySelector(
-		'.gallery'
-	) as HTMLElement;
+const galleryElement = ensureElement<HTMLElement>('.gallery');;
 
-const modalElement =
-	document.querySelector(
-		'#modal-container'
-	) as HTMLElement;
+const modalElement =ensureElement<HTMLElement>('#modal-container');
 
 
-const cardCatalogTemplate =
-	document.querySelector(
-		'#card-catalog'
-	) as HTMLTemplateElement;
+const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 
-const cardPreviewTemplate =
-	document.querySelector(
-		'#card-preview'
-	) as HTMLTemplateElement;
+const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 
-const cardBasketTemplate =
-	document.querySelector(
-		'#card-basket'
-	) as HTMLTemplateElement;
+const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 
-const basketTemplate =
-	document.querySelector(
-		'#basket'
-	) as HTMLTemplateElement;
+const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 
-const orderTemplate =
-	document.querySelector(
-		'#order'
-	) as HTMLTemplateElement;
+const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
 
-const contactsTemplate =
-	document.querySelector(
-		'#contacts'
-	) as HTMLTemplateElement;
+const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 
-const successTemplate =
-	document.querySelector(
-		'#success'
-	) as HTMLTemplateElement;
+const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
 
 const gallery =
@@ -106,30 +80,11 @@ const basketView =
 	);
 
 
-const counter =
-	new Counter(
-		document.querySelector(
-			'.header'
-		) as HTMLElement
-	);
+const headerElement = ensureElement<HTMLElement>('.header');
 
-counter.button.addEventListener(
-	'click',
-	() => {
-		events.emit(
-			'basket:open'
-		);
-	}
-);
-
-events.on(
-	'basket:changed',
-	() => {
-		counter.render({
-			counter:
-				basketModel.getCount()
-		});
-	}
+const counter = new Counter(
+	headerElement,
+	events
 );
 
 const presenter =
@@ -147,7 +102,8 @@ const presenter =
 		cardBasketTemplate,
 		orderTemplate,
 		contactsTemplate,
-		successTemplate
+		successTemplate,
+		counter
 	);
 
 presenter.init();

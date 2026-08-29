@@ -7,7 +7,7 @@ import { EventEmitter } from '../base/Events';
 
 export class Buyer {
 	private buyer: IBuyer = {
-		payment: 'online',
+		payment: null,
 		email: '',
 		phone: '',
 		address: '',
@@ -33,7 +33,7 @@ export class Buyer {
 
 	clear(): void {
 		this.buyer = {
-			payment: 'online',
+			payment: null,
 			email: '',
 			phone: '',
 			address: '',
@@ -48,7 +48,7 @@ export class Buyer {
 	validate(): TBuyerErrors {
 		const errors: TBuyerErrors = {};
 
-		if (!this.buyer.payment) {
+		if (!this.buyer.payment || this.buyer.payment === null) {
 			errors.payment =
 				'Выберите способ оплаты';
 		}
