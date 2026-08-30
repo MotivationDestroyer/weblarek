@@ -1,6 +1,8 @@
 import {
 	IBuyer,
-	IProduct
+	IOrder,
+	IProduct,
+	TPayment
 } from '../types';
 
 import { EventEmitter } from './base/Events';
@@ -36,6 +38,8 @@ import { Counter } from './HeaderCounter';
 
 import { CDN_URL } from '../utils/constants';
 
+import { cloneTemplate } from '../utils/utils';
+
 export class Presenter {
 	private cardPreview: CardPreview;
 	private orderForm: OrderForm;
@@ -60,45 +64,20 @@ export class Presenter {
 		private counter: Counter
 	) {
 
-		const previewClone =
-			this.cardPreviewTemplate.content
-				.firstElementChild!
-				.cloneNode(true) as HTMLElement;
+		const previewClone = cloneTemplate<HTMLElement>(this.cardPreviewTemplate)
 
 		this.cardPreview = new CardPreview(
 			previewClone,
-			() => {
-				const product =
-					this.productsModel.getPreview();
-
-				if (!product) {
-					return;
-				}
-
-				this.events.emit(
-					'card:action',
-					{
-						id: product.id
-					}
-				);
-			}
+			this.events
 		);
-
-
-		const orderClone =
-			this.orderTemplate.content
-				.firstElementChild!
-				.cloneNode(true) as HTMLElement;
+		const orderClone = cloneTemplate<HTMLFormElement>(this.orderTemplate);
 
 		this.orderForm = new OrderForm(
 			orderClone,
 			this.events
 		);
 
-		const contactsClone =
-			this.contactsTemplate.content
-				.firstElementChild!
-				.cloneNode(true) as HTMLElement;
+		const contactsClone = cloneTemplate<HTMLFormElement>(this.contactsTemplate);
 
 		this.contactsForm =
 			new ContactsForm(
@@ -107,10 +86,7 @@ export class Presenter {
 			);
 
 
-		const successClone =
-			this.successTemplate.content
-				.firstElementChild!
-				.cloneNode(true) as HTMLElement;
+		const successClone = cloneTemplate<HTMLElement>(this.successTemplate);
 
 		this.success = new Success(
 			successClone,
@@ -139,24 +115,20 @@ export class Presenter {
 			}
 		);
 
-		this.events.on<{ id: string }>(
+		this.events.on(
 			'card:action',
-			({ id }) => {
+			() => {
 				const product =
-					this.productsModel.getItem(id);
+					this.productsModel.getPreview();
 
 				if (!product) {
 					return;
 				}
 
-				if (
-					this.basketModel.hasItem(id)
-				) {
-					this.basketModel.removeItem(id);
+				if (this.basketModel.hasItem(product.id)) {
+					this.basketModel.removeItem(product.id);
 				} else {
-					this.basketModel.addItem(
-						product
-					);
+					this.basketModel.addItem(product);
 				}
 
 				this.modal.close();
@@ -167,13 +139,6 @@ export class Presenter {
 			'modal:close',
 			() => {
 				this.modal.close();
-			}
-		);
-
-		this.events.on(
-			'basket:changed',
-			() => {
-				this.updateBasket();
 			}
 		);
 
@@ -206,13 +171,15 @@ export class Presenter {
 		this.events.on<IBuyer>(
 			'buyer:changed',
 			(buyer) => {
-				this.orderForm.render(
-					buyer
-				);
+				this.orderForm.render({
+					...buyer,
+					error: ''
+				});
 
-				this.contactsForm.render(
-					buyer
-				);
+				this.contactsForm.render({
+					...buyer,
+					error: ''
+				});
 
 				this.validateOrder();
 				this.validateContacts();
@@ -220,7 +187,7 @@ export class Presenter {
 		);
 
 		this.events.on<{
-			payment: 'online' | 'offline';
+			payment: TPayment;
 		}>(
 			'order:payment',
 			({ payment }) => {
@@ -242,46 +209,44 @@ export class Presenter {
 		);
 
 		this.events.on(
-			'order:submit',
-			() => {
-				const errors =
-					this.buyerModel.validate();
+    'order:submit',
+    () => {
+        const errors =
+            this.buyerModel.validate();
 
-				const orderErrors: string[] =
-					[];
+        const orderErrors: string[] =
+            [];
 
-				if (errors.payment) {
-					orderErrors.push(
-						errors.payment
-					);
-				}
+        if (errors.payment) {
+            orderErrors.push(
+                errors.payment
+            );
+        }
 
-				if (errors.address) {
-					orderErrors.push(
-						errors.address
-					);
-				}
+        if (errors.address) {
+            orderErrors.push(
+                errors.address
+            );
+        }
 
-				if (
-					orderErrors.length > 0
-				) {
-					this.orderForm.setErrors(
-						orderErrors.join(', ')
-					);
+        if (orderErrors.length > 0) {
+            this.orderForm.render({
+                ...this.buyerModel.getBuyer(),
+                error: orderErrors.join(', ')
+            });
 
-					return;
-				}
+            return;
+        }
 
-				this.orderForm.setErrors('');
-
-				this.modal.render({
-					content:
-						this.contactsForm.render(
-							this.buyerModel.getBuyer()
-						)
-				});
-			}
-		);
+        this.modal.render({
+            content:
+                this.contactsForm.render({
+                    ...this.buyerModel.getBuyer(),
+                    error: ''
+                })
+        });
+    }
+);
 
 		this.events.on<{
 			email: string;
@@ -318,11 +283,16 @@ export class Presenter {
 				this.modal.close();
 			}
 		);
-		this.events.on('basket:changed', () => {
+		this.events.on(
+		'basket:changed',
+		() => {
+			this.updateBasket();
+
 			this.counter.render({
-				counter: this.basketModel.getItems().length
+				counter: this.basketModel.getCount()
 			});
-		});
+		}
+	);
 	}
 
 	init(): void {
@@ -352,11 +322,9 @@ export class Presenter {
 		const cards = items.map(
 			(item) => {
 				const clone =
-					this.cardCatalogTemplate.content
-						.firstElementChild!
-						.cloneNode(
-							true
-						) as HTMLElement;
+						cloneTemplate<HTMLElement>(
+							this.cardCatalogTemplate
+						);
 
 				const card =
 					new CardCatalog(
@@ -441,11 +409,9 @@ export class Presenter {
 		const cards = items.map(
 			(item, index) => {
 				const clone =
-					this.cardBasketTemplate.content
-						.firstElementChild!
-						.cloneNode(
-							true
-						) as HTMLElement;
+						cloneTemplate<HTMLElement>(
+							this.cardBasketTemplate
+						);
 
 				const card =
 					new CardBasket(
@@ -482,9 +448,10 @@ export class Presenter {
 	private openOrderForm(): void {
 		this.modal.render({
 			content:
-				this.orderForm.render(
-					this.buyerModel.getBuyer()
-				)
+            this.orderForm.render({
+                ...this.buyerModel.getBuyer(),
+                error: ''
+            })
 		});
 
 		this.validateOrder();
@@ -511,9 +478,10 @@ export class Presenter {
 			);
 		}
 
-		this.orderForm.setErrors(
-			orderErrors.join(', ')
-		);
+		this.orderForm.render({
+			...this.buyerModel.getBuyer(),
+			error: orderErrors.join(', ')
+		});
 	}
 
 	private validateContacts(): void {
@@ -535,9 +503,10 @@ export class Presenter {
 			);
 		}
 
-		this.contactsForm.setErrors(
-			contactErrors.join(', ')
-		);
+		this.contactsForm.render({
+			...this.buyerModel.getBuyer(),
+			error: contactErrors.join(', ')
+		});
 	}
 
 	private submitOrder(): void {
@@ -555,24 +524,17 @@ export class Presenter {
 		const buyer =
 			this.buyerModel.getBuyer();
 
-		const order = {
+		const order: IOrder = {
 			...buyer,
-
 			items:
 				this.basketModel
 					.getItems()
 					.map(
 						(item) => item.id
 					),
-
 			total:
 				this.basketModel.getTotal()
 		};
-
-		console.log(
-			'Отправляем заказ:',
-			order
-		);
 
 		this.api
 			.orderProducts(order)

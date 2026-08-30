@@ -1,14 +1,18 @@
-import { IBuyer } from '../../../types';
 import { EventEmitter } from '../../base/Events';
-import { Form } from '../Form';
 import { ensureElement } from '../../../utils/utils';
+import { Form, IForm } from '../Form';
 
-export class ContactsForm extends Form<IBuyer> {
+interface IContactsForm extends IForm {
+	email: string;
+	phone: string;
+}
+
+export class ContactsForm extends Form<IContactsForm> {
 	protected emailInput: HTMLInputElement;
 	protected phoneInput: HTMLInputElement;
 
 	constructor(
-		container: HTMLElement,
+		container: HTMLFormElement,
 		protected events: EventEmitter
 	) {
 		super(container);
@@ -49,7 +53,7 @@ export class ContactsForm extends Form<IBuyer> {
 			}
 		);
 
-		this.form.addEventListener(
+		this.container.addEventListener(
 			'submit',
 			(event) => {
 				event.preventDefault();
@@ -67,11 +71,5 @@ export class ContactsForm extends Form<IBuyer> {
 
 	set phone(value: string) {
 		this.phoneInput.value = value;
-	}
-
-	setErrors(errors: string): void {
-		this.errors.textContent = errors;
-		this.submitButton.disabled =
-			Boolean(errors);
 	}
 }

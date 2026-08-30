@@ -2,6 +2,7 @@ import { IProduct } from '../../../types';
 import { Card } from '../Card';
 import { categoryMap } from '../../../utils/constants';
 import { ensureElement } from '../../../utils/utils';
+import { EventEmitter } from '../../base/Events';
 
 export interface ICardPreview
 	extends Omit<IProduct, 'image'> {
@@ -22,7 +23,7 @@ export class CardPreview
 
 	constructor(
 		container: HTMLElement,
-		action: () => void
+		protected events: EventEmitter
 	) {
 		super(container);
 
@@ -50,10 +51,9 @@ export class CardPreview
 				container
 			);
 
-		this.cardButton.addEventListener(
-			'click',
-			action
-		);
+            this.cardButton.addEventListener('click', () => {
+                this.events.emit('card:action');
+            });
 	}
 
 set category(value: string) {

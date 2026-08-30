@@ -1,16 +1,20 @@
-import { IBuyer, TPayment } from '../../../types';
+import { TPayment } from '../../../types';
 import { EventEmitter } from '../../base/Events';
 import { ensureElement } from '../../../utils/utils';
-import { Form } from '../Form';
+import { Form, IForm } from '../Form';
 
+interface IOrderForm extends IForm {
+	payment: TPayment | null;
+	address: string;
+}
 
-export class OrderForm extends Form<IBuyer> {
+export class OrderForm extends Form<IOrderForm> {
 	protected addressInput: HTMLInputElement;
 	protected onlineButton: HTMLButtonElement;
 	protected offlineButton: HTMLButtonElement;
 
 	constructor(
-		container: HTMLElement,
+		container: HTMLFormElement,
 		protected events: EventEmitter
 	) {
 		super(container);
@@ -70,7 +74,7 @@ export class OrderForm extends Form<IBuyer> {
 			}
 		);
 
-		this.form.addEventListener(
+		this.container.addEventListener(
 			'submit',
 			(event) => {
 				event.preventDefault();
@@ -96,11 +100,5 @@ export class OrderForm extends Form<IBuyer> {
 
 	set address(value: string) {
 		this.addressInput.value = value;
-	}
-
-	setErrors(errors: string): void {
-		this.errors.textContent = errors;
-		this.submitButton.disabled =
-			Boolean(errors);
 	}
 }

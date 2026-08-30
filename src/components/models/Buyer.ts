@@ -23,7 +23,7 @@ export class Buyer {
 
 		this.events.emit(
 			'buyer:changed',
-			this.buyer
+			this.getBuyer()
 		);
 	}
 
@@ -41,14 +41,14 @@ export class Buyer {
 
 		this.events.emit(
 			'buyer:changed',
-			this.buyer
+			this.getBuyer()
 		);
 	}
 
 	validate(): TBuyerErrors {
 		const errors: TBuyerErrors = {};
 
-		if (!this.buyer.payment || this.buyer.payment === null) {
+		if (!this.buyer.payment) {
 			errors.payment =
 				'Выберите способ оплаты';
 		}

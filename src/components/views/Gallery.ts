@@ -4,22 +4,12 @@ interface IGallery {
 	items: HTMLElement[];
 }
 
-export class Gallery
-	extends Component<IGallery> {
-
+export class Gallery extends Component<IGallery> {
 	constructor(container: HTMLElement) {
 		super(container);
 	}
 
-	render(
-		data: Partial<IGallery>
-	): HTMLElement {
-		if (data.items) {
-			this.container.replaceChildren(
-				...data.items
-			);
-		}
-
-		return this.container;
+	set items(value: HTMLElement[]) {
+		this.container.replaceChildren(...value);
 	}
 }

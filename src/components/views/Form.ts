@@ -1,26 +1,38 @@
 import { Component } from '../base/Component';
+import { ensureElement } from '../../utils/utils';
 
-export abstract class Form<T> extends Component<T> {
-	protected form: HTMLFormElement;
+export interface IForm {
+	error: string;
+}
+
+export abstract class Form<T extends IForm>
+	extends Component<T> {
+
 	protected submitButton: HTMLButtonElement;
 	protected errors: HTMLElement;
 
-	constructor(container: HTMLElement) {
+	constructor(
+		protected container: HTMLFormElement
+	) {
 		super(container);
 
-		this.form =
-			container instanceof HTMLFormElement
-				? container
-				: container.querySelector('form') as HTMLFormElement;
-
 		this.submitButton =
-			this.form.querySelector(
-				'button[type="submit"]'
-			) as HTMLButtonElement;
+			ensureElement<HTMLButtonElement>(
+				'button[type="submit"]',
+				container
+			);
 
 		this.errors =
-			this.form.querySelector(
-				'.form__errors'
-			) as HTMLElement;
+			ensureElement<HTMLElement>(
+				'.form__errors',
+				container
+			);
+	}
+
+	set error(value: string) {
+		this.errors.textContent = value;
+
+		this.submitButton.disabled =
+			Boolean(value);
 	}
 }

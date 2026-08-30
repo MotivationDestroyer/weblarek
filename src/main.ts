@@ -17,7 +17,7 @@ import { Counter } from './components/HeaderCounter';
 
 import { API_URL } from './utils/constants';
 
-import { ensureElement } from './utils/utils';
+import { ensureElement, cloneTemplate } from './utils/utils';
 
 const api = new Api(API_URL);
 
@@ -68,10 +68,7 @@ const modal =
 	);
 
 
-const basketClone =
-	basketTemplate.content
-		.firstElementChild!
-		.cloneNode(true) as HTMLElement;
+const basketClone = cloneTemplate<HTMLElement>(basketTemplate);
 
 const basketView =
 	new BasketView(
